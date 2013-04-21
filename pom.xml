@@ -5,258 +5,417 @@
          xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
                                http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>org.jboss.tools.build-ci</groupId>
-    <artifactId>component-template-build-ci</artifactId>
-    <packaging>pom</packaging>
-    <version>0.1-SNAPSHOT</version>
-    <name>Template for JBoss Tools component jobs</name>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.jboss.tools.build-ci</groupId>
+  <artifactId>component-template-build-ci</artifactId>
+  <packaging>pom</packaging>
+  <version>0.1-SNAPSHOT</version>
+  <name>Template for JBoss Tools component jobs</name>
 
-    <properties>
-      <github.base>https://github.com/jbosstools/</github.base>
-      <git.base>git://github.com/jbosstools/</git.base>
-    </properties>
-    <build>
-        <plugins>
+  <properties>
+    <github.base>https://github.com/jbosstools/</github.base>
+    <git.base>git://github.com/jbosstools/</git.base>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>com.github.goldin</groupId>
+	<artifactId>jenkins-maven-plugin</artifactId>
+	<version>0.2.5</version>
+	<executions>
+	  <execution>
+	    <id>generate-jenkins-jobs</id>
+	    <phase>compile</phase>
+	    <goals>
+	      <goal>generate</goal>
+	    </goals>
+	    <configuration>
+	      <generationPom>pom.xml</generationPom>
+	      <outputDirectory>${project.build.directory}/jobs</outputDirectory>
+	      <jenkinsUrl>http://jenkins-man.rhcloud.com</jenkinsUrl>
+	      <jobs>
+		<job>
+		  <id>template-base</id>
+		  <abstract>true</abstract>
+		  <description>Nightly build using Tycho, checking every 8 hrs for changes.
 
-            <plugin>
-                <groupId>com.github.goldin</groupId>
-                <artifactId>jenkins-maven-plugin</artifactId>
-                <version>0.2.5</version>
-                <executions>
-                    <execution>
-                        <id>generate-jenkins-jobs</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-			  <generationPom>pom.xml</generationPom>
-			  <outputDirectory>${project.build.directory}/jobs</outputDirectory>
-			    <jenkinsUrl>http://jenkins-man.rhcloud.com</jenkinsUrl>
-                            <jobs>
-			      <job>
-				<id>template-base</id>
-				<abstract>true</abstract>
-				<description>Nightly build using Tycho, checking every 8 hrs for changes.
+		  &lt;h2&gt;&lt;a style="color:blue" href="http://download.jboss.org/jbosstools/builds/cascade/4.1.kepler.html"&gt;Build Job Cascade &amp;amp; Results&lt;/a&gt;&lt;/h2&gt;
 
-&lt;h2&gt;&lt;a style="color:blue" href="http://download.jboss.org/jbosstools/builds/cascade/4.1.kepler.html"&gt;Build Job Cascade &amp;amp; Results&lt;/a&gt;&lt;/h2&gt;
+		  &lt;h3&gt;job runs in this order: build against minimum target platform, publish to &lt;a href="http://download.jboss.org/jbosstools/builds/staging/"&gt;staging&lt;/a&gt;, test against maximum target platform&lt;/h3&gt;</description>
+		  <daysToKeep>-1</daysToKeep>
+		  <numToKeep>5</numToKeep>
+		  
+		  <parameters>
+		    <parameter>
+		      <type>string</type>
+		      <name>MAVEN_FLAGS</name>
+		      <value>-B -U -fae -e -P hudson,pack200,jbosstools-nightly-staging-composite,unified.target</value>
+		      <description>TBD</description>
+		    </parameter>
+		    <parameter>
+		      <type>string</type>
+		      <name>TARGET_PLATFORM_VERSION</name>
+		      <value>4.30.5.Alpha3</value>
+		    </parameter>
+		    <parameter>
+		      <type>string</type>
+		      <name>TARGET_PLATFORM_VERSION_MAXIMUM</name>
+		      <value>4.30.5.Alpha3</value>
+		    </parameter>
+		    <parameter>
+		      <type>bool</type>
+		      <name>skipRevisionCheckWhenPublishing</name>
+		      <description>TBD</description>
+		      <value>4.30.5.Alpha3</value>
+		    </parameter>
+		  </parameters>
+		  <properties><![CDATA[
+		  <hudson.plugins.sidebar__link.ProjectLinks>
+		  <links>
+		  <hudson.plugins.sidebar__link.LinkAction>
+		  <url>ws/sources/target/jacoco.exec</url>
+		  <text>Latest jacoco.exec (import in EclEmma)</text>
+		  <icon>monitor.gif</icon>
+		  </hudson.plugins.sidebar__link.LinkAction>
+		  <hudson.plugins.sidebar__link.LinkAction>
+		  <url>ws/sources/target/coverage-report/html/index.html</url>
+		  <text>Latest HTML Code Coverage reports</text>
+		  <icon>monitor.gif</icon>
+		  </hudson.plugins.sidebar__link.LinkAction>
+		  </links>
+		  </hudson.plugins.sidebar__link.ProjectLinks>
+		  <hudson.plugins.build__publisher.ExternalProjectProperty/>
+		  ]]>
+		  </properties>
+		  
+		  <mavenName>apache-maven-3</mavenName>
+		  <jdkName>java16_default</jdkName>
+		  <scmType>git</scmType>
+		  <jobType>free</jobType>
+		  <trigger>
+		    <type>scm</type>
+		    <expression>55 5,13,21 * * *</expression>
+		  </trigger>
+		  <tasks>
+		    <maven>
+		      <!-- Default is '(Default)' -->
+		      <mavenName>maven-3.0.4</mavenName>
+		      <!-- Default is '-B -e clean install' -->
+		      <targets>clean install ${MAVEN_FLAGS} -DTARGET_PLATFORM_VERSION=${TARGET_PLATFORM_VERSION}</targets>
+		      <!-- Default is 'pom.xml', not used if 'false' -->
+		      <pom>sources/pom.xml</pom>
+		      <properties>maven.test.skip=true
+		      download.cache.directory=/home/hudson/static_build_env/jbds/download-cache
+		      jbosstools-nightly-staging-composite=http://download.jboss.org/jbosstools/builds/staging/_composite_/core/4.1.kepler/
+		      jbosstools-nightly=http://download.jboss.org/jbosstools/updates/nightly/core/4.1.kepler/
+		      JOB_NAME=${JOB_NAME}
 
-&lt;h3&gt;job runs in this order: build against minimum target platform, publish to &lt;a href="http://download.jboss.org/jbosstools/builds/staging/"&gt;staging&lt;/a&gt;, test against maximum target platform&lt;/h3&gt;</description>
-                                <daysToKeep>-1</daysToKeep>
-                                <numToKeep>5</numToKeep>
-			
-				<parameters>
-				  <parameter>
-				    <type>string</type>
-				    <name>MAVEN_FLAGS</name>
-				    <value>-B -U -fae -e -P hudson,pack200,jbosstools-nightly-staging-composite,unified.target</value>
-				    <description>TBD</description>
-				  </parameter>
-				  <parameter>
-				    <type>string</type>
-				    <name>TARGET_PLATFORM_VERSION</name>
-				    <value>4.30.5.Alpha3</value>
-				  </parameter>
-				  <parameter>
-				    <type>string</type>
-				    <name>TARGET_PLATFORM_VERSION_MAXIMUM</name>
-				    <value>4.30.5.Alpha3</value>
-				  </parameter>
-				  <parameter>
-				    <type>bool</type>
-				    <name>skipRevisionCheckWhenPublishing</name>
-				    <description>TBD</description>
-				    <value>4.30.5.Alpha3</value>
-				  </parameter>
-				</parameters>
-				<properties><![CDATA[
-				      <hudson.plugins.sidebar__link.ProjectLinks>
-				       <links>
-				        <hudson.plugins.sidebar__link.LinkAction>
-				         <url>ws/sources/target/jacoco.exec</url>
-				         <text>Latest jacoco.exec (import in EclEmma)</text>
-				         <icon>monitor.gif</icon>
-				        </hudson.plugins.sidebar__link.LinkAction>
-				        <hudson.plugins.sidebar__link.LinkAction>
-				         <url>ws/sources/target/coverage-report/html/index.html</url>
-				         <text>Latest HTML Code Coverage reports</text>
-				         <icon>monitor.gif</icon>
-				        </hudson.plugins.sidebar__link.LinkAction>
-				       </links>
-				      </hudson.plugins.sidebar__link.ProjectLinks>
-				      <hudson.plugins.build__publisher.ExternalProjectProperty/>
-				      ]]>
-				</properties>
-				
-				<mavenName>apache-maven-3</mavenName>
-				<jdkName>java16_default</jdkName>
-                                <scmType>git</scmType>
-				<jobType>free</jobType>
-				<trigger>
-				  <type>scm</type>
-				  <expression>55 5,13,21 * * *</expression>
-				</trigger>
-				<tasks>
-				  <maven>
-				    <!-- Default is '(Default)' -->
-				    <mavenName>maven-3.0.4</mavenName>
-				    <!-- Default is '-B -e clean install' -->
-				    <targets>clean install ${MAVEN_FLAGS} -DTARGET_PLATFORM_VERSION=${TARGET_PLATFORM_VERSION}</targets>
-				    <!-- Default is 'pom.xml', not used if 'false' -->
-				    <pom>sources/pom.xml</pom>
-				    <properties>maven.test.skip=true
-download.cache.directory=/home/hudson/static_build_env/jbds/download-cache
-jbosstools-nightly-staging-composite=http://download.jboss.org/jbosstools/builds/staging/_composite_/core/4.1.kepler/
-jbosstools-nightly=http://download.jboss.org/jbosstools/updates/nightly/core/4.1.kepler/
-JOB_NAME=${JOB_NAME}
+		      BUILD_ID=${BUILD_ID}
+		      BUILD_NUMBER=${BUILD_NUMBER}
+		      skipPrivateRequirements=false</properties>
+		      <!-- Default is 'false' -->
+		      <usePrivateRepository>true</usePrivateRepository>
+		      <jvmOptions>-Xms512m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=256m -Djbosstools.test.jre.5="${NATIVE_TOOLS}${SEP}${JAVA15}" -Djbosstools.test.jre.6="${NATIVE_TOOLS}${SEP}${JAVA16}</jvmOptions>
+		    </maven>
+		    <shell>
+		      <command>cd ${WORKSPACE}/sources/
+		      wget http://raw.github.com/jbosstools/jbosstools-build-ci/master/publish/publish.sh -q --no-check-certificate -N
+		      export skipRevisionCheckWhenPublishing=${skipRevisionCheckWhenPublishing}
+		      . publish.sh</command>
+		    </shell>
+		    <maven>
+		      <!-- Default is '(Default)' -->
+		      <mavenName>maven-3.0.4</mavenName>
+		      <!-- Default is '-B -e clean install' -->
+		      <targets>verify ${MAVEN_FLAGS} -DTARGET_PLATFORM_VERSION=${TARGET_PLATFORM_VERSION_MAXIMUM}</targets>
+		      <!-- Default is 'pom.xml', not used if 'false' -->
+		      <pom>sources/tests/pom.xml</pom>
+		      <properties>maven.test.error.ignore=true
+		      maven.test.failure.ignore=true
+		      download.cache.directory=/home/hudson/static_build_env/jbds/download-cache
+		      jbosstools-nightly-staging-composite=http://download.jboss.org/jbosstools/builds/staging/_composite_/core/4.1.kepler/
+		      jbosstools-nightly=http://download.jboss.org/jbosstools/updates/nightly/core/4.1.kepler/
+		      JOB_NAME=${JOB_NAME}
 
-BUILD_ID=${BUILD_ID}
-BUILD_NUMBER=${BUILD_NUMBER}
-skipPrivateRequirements=false</properties>
-				    <!-- Default is 'false' -->
-				    <usePrivateRepository>true</usePrivateRepository>
-				    <jvmOptions>-Xms512m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=256m -Djbosstools.test.jre.5="${NATIVE_TOOLS}${SEP}${JAVA15}" -Djbosstools.test.jre.6="${NATIVE_TOOLS}${SEP}${JAVA16}</jvmOptions>
-				  </maven>
-				  <shell>
-				    <command>cd ${WORKSPACE}/sources/
-wget http://raw.github.com/jbosstools/jbosstools-build-ci/master/publish/publish.sh -q --no-check-certificate -N
-export skipRevisionCheckWhenPublishing=${skipRevisionCheckWhenPublishing}
-. publish.sh</command>
-				  </shell>
-				  <maven>
-				    <!-- Default is '(Default)' -->
-				    <mavenName>maven-3.0.4</mavenName>
-				    <!-- Default is '-B -e clean install' -->
-				    <targets>verify ${MAVEN_FLAGS} -DTARGET_PLATFORM_VERSION=${TARGET_PLATFORM_VERSION_MAXIMUM}</targets>
-				    <!-- Default is 'pom.xml', not used if 'false' -->
-				    <pom>sources/tests/pom.xml</pom>
-				    <properties>maven.test.error.ignore=true
-maven.test.failure.ignore=true
-download.cache.directory=/home/hudson/static_build_env/jbds/download-cache
-jbosstools-nightly-staging-composite=http://download.jboss.org/jbosstools/builds/staging/_composite_/core/4.1.kepler/
-jbosstools-nightly=http://download.jboss.org/jbosstools/updates/nightly/core/4.1.kepler/
-JOB_NAME=${JOB_NAME}
-
-BUILD_ID=${BUILD_ID}
-BUILD_NUMBER=${BUILD_NUMBER}
-skipPrivateRequirements=false</properties>
-				    <!-- Default is 'false' -->
-				    <usePrivateRepository>true</usePrivateRepository>
-				    <jvmOptions>-Xms512m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=256m -Djbosstools.test.jre.5="${NATIVE_TOOLS}${SEP}${JAVA15}" -Djbosstools.test.jre.6="${NATIVE_TOOLS}${SEP}${JAVA16}"</jvmOptions>
-				  </maven>
-				  <shell>
-				    <command>mkdir -p ${WORKSPACE}/jacoco; cd ${WORKSPACE}/jacoco
-wget http://raw.github.com/jbosstools/jbosstools-build-ci/master/jacoco/jacoco-reports.xml -q --no-check-certificate -N
-wget http://raw.github.com/jbosstools/jbosstools-build-ci/master/jacoco/jacocoant.jar -q --no-check-certificate -N
-cd ${WORKSPACE}/sources
-ant -f $WORKSPACE/jacoco/jacoco-reports.xml</command>
-				  </shell>
-				</tasks>
-				<mail>
-				  <recipients>jbosstools-builds@lists.jboss.org</recipients>
-				   <sendToIndividuals>true</sendToIndividuals>
-				   <sendForUnstable>false</sendForUnstable>
-				</mail>
-				<publishers>
-				  <![CDATA[
-					   <hudson.tasks.ArtifactArchiver>
-					     <artifacts>results/*/all/*Update*.zip,sources/target/jacoco.exec,sources/tests/*/target/work/configuration/*.log,sources/tests/*/target/work/data/.metadata/*.log, sources/target/coverage-report/**</artifacts>
-					     <latestOnly>true</latestOnly>
-					     <zip>false</zip>
-					   </hudson.tasks.ArtifactArchiver>
-					   <hudson.tasks.junit.JUnitResultArchiver>
-					     <testResults>sources/tests/*/target/surefire-reports/TEST-*.xml</testResults>
-					     <keepLongStdio>false</keepLongStdio>
-					     <testDataPublishers/>
-					   </hudson.tasks.junit.JUnitResultArchiver>
-					   <hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
-					     <regexp>BUILD_DESCRIPTION='(.+)'</regexp>
-					     <regexpForFailed/>
-					     <description>\1</description>
-					     <setForMatrix>false</setForMatrix>
-					   </hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
-					   <hudson.plugins.build__publisher.BuildPublisher>
-					     <publishUnstableBuilds>true</publishUnstableBuilds>
-					     <publishFailedBuilds>false</publishFailedBuilds>
-					     <postActions class="vector"/>
-					   </hudson.plugins.build__publisher.BuildPublisher>
-					   ]]>
-				</publishers>
-				<buildWrappers>
-				  <![CDATA[
-					   <hudson.plugins.build__timeout.BuildTimeoutWrapper>
-					     <timeoutMinutes>120</timeoutMinutes>
-					     <failBuild>false</failBuild>
-					     <writingDescription>false</writingDescription>
-					     <timeoutPercentage>0</timeoutPercentage>
-					     <timeoutType>absolute</timeoutType>
-					     <timeoutMinutesElasticDefault>3</timeoutMinutesElasticDefault>
-					   </hudson.plugins.build__timeout.BuildTimeoutWrapper>
-					   <org.jenkinsci.plugins.xvfb.XvfbBuildWrapper>
-					     <installationName>rpm-package</installationName>
-					     <screen>1024x768x24</screen>
-					     <debug>false</debug>
-					     <timeout>0</timeout>
-					     <displayNameOffset>1</displayNameOffset>
-					     <additionalOptions/>
-					     <shutdownWithBuild>false</shutdownWithBuild>
-					   </org.jenkinsci.plugins.xvfb.XvfbBuildWrapper>
-					   ]]>
-				</buildWrappers>
-				<process>
-				  {{
-				  def assignedNode = node.assignedNode
-				  assignedNode[0].value = "(RHEL5||RHEL6)&amp;&amp;!ia64&amp;&amp;!rhts"
-				  }}
-				</process>
-			      </job>
-			      <!-- Specific Jobs -->
-			      <job>
-				<id>jbosstools-base</id>
-				<parent>template-base</parent>
-				<gitHubUrl>${github.base}jbosstools-base</gitHubUrl>
-				<repository>
-				  <remote>${git.base}jbosstools-base.git</remote>
-				  <gitBranch>origin/master</gitBranch>
-				  <local>sources</local>
-				</repository>
-			      </job> 
-			      <job>
-				<id>jbosstools-freemarker</id>
-				<parent>template-base</parent>
-				<gitHubUrl>${github.base}jbosstools-freemarker</gitHubUrl>
-				<repository>
-				  <remote>${git.base}jbosstools-freemarker.git</remote>
-				  <gitBranch>origin/master</gitBranch>
-				  <local>sources</local>
-				</repository>
-			      </job> 
-			      <job>
-				<id>jbosstools-livereload</id>
-				<parent>template-base</parent>
-				<gitHubUrl>${github.base}jbosstools-livereload</gitHubUrl>
-				<repository>
-				  <remote>${git.base}jbosstools-livereload.git</remote>
-				  <gitBranch>origin/master</gitBranch>
-				  <local>sources</local>
-				</repository>
-			      </job>
-			      <job>
-				<id>jbosstools-birt</id>
-				<parent>template-base</parent>
-				<gitHubUrl>${github.base}jbosstools-birt</gitHubUrl>
-				<repository>
-				  <remote>${git.base}jbosstools-birt.git</remote>
-				  <gitBranch>origin/master</gitBranch>
-				  <local>sources</local>
-				</repository>
-			      </job> 
-                            </jobs>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+		      BUILD_ID=${BUILD_ID}
+		      BUILD_NUMBER=${BUILD_NUMBER}
+		      skipPrivateRequirements=false</properties>
+		      <!-- Default is 'false' -->
+		      <usePrivateRepository>true</usePrivateRepository>
+		      <jvmOptions>-Xms512m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=256m -Djbosstools.test.jre.5="${NATIVE_TOOLS}${SEP}${JAVA15}" -Djbosstools.test.jre.6="${NATIVE_TOOLS}${SEP}${JAVA16}"</jvmOptions>
+		    </maven>
+		    <shell>
+		      <command>mkdir -p ${WORKSPACE}/jacoco; cd ${WORKSPACE}/jacoco
+		      wget http://raw.github.com/jbosstools/jbosstools-build-ci/master/jacoco/jacoco-reports.xml -q --no-check-certificate -N
+		      wget http://raw.github.com/jbosstools/jbosstools-build-ci/master/jacoco/jacocoant.jar -q --no-check-certificate -N
+		      cd ${WORKSPACE}/sources
+		      ant -f $WORKSPACE/jacoco/jacoco-reports.xml</command>
+		    </shell>
+		  </tasks>
+		  <mail>
+		    <recipients>jbosstools-builds@lists.jboss.org</recipients>
+		    <sendToIndividuals>true</sendToIndividuals>
+		    <sendForUnstable>false</sendForUnstable>
+		  </mail>
+		  <publishers>
+		    <![CDATA[
+			     <hudson.tasks.ArtifactArchiver>
+			     <artifacts>results/*/all/*Update*.zip,sources/target/jacoco.exec,sources/tests/*/target/work/configuration/*.log,sources/tests/*/target/work/data/.metadata/*.log, sources/target/coverage-report/**</artifacts>
+			     <latestOnly>true</latestOnly>
+			     <zip>false</zip>
+			     </hudson.tasks.ArtifactArchiver>
+			     <hudson.tasks.junit.JUnitResultArchiver>
+			     <testResults>sources/tests/*/target/surefire-reports/TEST-*.xml</testResults>
+			     <keepLongStdio>false</keepLongStdio>
+			     <testDataPublishers/>
+			     </hudson.tasks.junit.JUnitResultArchiver>
+			     <hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
+			     <regexp>BUILD_DESCRIPTION='(.+)'</regexp>
+			     <regexpForFailed/>
+			     <description>\1</description>
+			     <setForMatrix>false</setForMatrix>
+			     </hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
+			     <hudson.plugins.build__publisher.BuildPublisher>
+			     <publishUnstableBuilds>true</publishUnstableBuilds>
+			     <publishFailedBuilds>false</publishFailedBuilds>
+			     <postActions class="vector"/>
+			     </hudson.plugins.build__publisher.BuildPublisher>
+		    ]]>
+		  </publishers>
+		  <buildWrappers>
+		    <![CDATA[
+			     <hudson.plugins.build__timeout.BuildTimeoutWrapper>
+			     <timeoutMinutes>120</timeoutMinutes>
+			     <failBuild>false</failBuild>
+			     <writingDescription>false</writingDescription>
+			     <timeoutPercentage>0</timeoutPercentage>
+			     <timeoutType>absolute</timeoutType>
+			     <timeoutMinutesElasticDefault>3</timeoutMinutesElasticDefault>
+			     </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+			     <org.jenkinsci.plugins.xvfb.XvfbBuildWrapper>
+			     <installationName>rpm-package</installationName>
+			     <screen>1024x768x24</screen>
+			     <debug>false</debug>
+			     <timeout>0</timeout>
+			     <displayNameOffset>1</displayNameOffset>
+			     <additionalOptions/>
+			     <shutdownWithBuild>false</shutdownWithBuild>
+			     </org.jenkinsci.plugins.xvfb.XvfbBuildWrapper>
+		    ]]>
+		  </buildWrappers>
+		  <process>
+		    {{
+		    def assignedNode = node.assignedNode
+		    assignedNode[0].value = "(RHEL5||RHEL6)&amp;&amp;!ia64&amp;&amp;!rhts"
+		    }}
+		  </process>
+		</job>
+		<!-- Specific Jobs -->
+		<job>
+		  <id>jbosstools-aerogear</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-aerogear</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-aerogear.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-base</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-base</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-base.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-birt</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-birt</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-birt.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-bpel</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-bpel</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-bpel.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-central</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-central</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-central.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-esb</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-esb</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-esb.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-forge</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-forge</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-forge.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-freemarker</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-freemarker</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-freemarker.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-gwt</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-gwt</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-gwt.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-hibernate</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-hibernate</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-hibernate.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-javaee</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-javaee</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-javaee.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-jbpm</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-jbpm</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-jbpm.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-jst</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-jst</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-jst.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-livereload</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-livereload</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-livereload.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-openshift</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-openshift</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-openshift.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-portlet</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-portlet</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-portlet.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-server</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-server</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-server.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-vpe</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-vpe</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-vpe.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-webservices</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-webservices</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-webservices.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+		<job>
+		  <id>jbosstools-xulrunner</id>
+		  <parent>template-base</parent>
+		  <gitHubUrl>${github.base}jbosstools-xulrunner</gitHubUrl>
+		  <repository>
+		    <remote>${git.base}jbosstools-xulrunner.git</remote>
+		    <gitBranch>origin/master</gitBranch>
+		    <local>sources</local>
+		  </repository>
+		</job>
+	      </jobs>
+	    </configuration>
+	  </execution>
+	</executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
