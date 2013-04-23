@@ -225,12 +225,7 @@ to overwrite the previous one, or if it's in fact the same source therefore same
 			     </org.jenkinsci.plugins.xvfb.XvfbBuildWrapper>
 		    ]]>
 		  </buildWrappers>
-		  <process>
-		    {{
-		    def assignedNode = node.assignedNode
-		    assignedNode[0].value = "${assignedNode}"
-		    }}
-		  </process>
+		  <node>${assignedNode}</node>
 		</job>
 		<!-- Specific Jobs -->
 		<job>
