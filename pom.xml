@@ -15,6 +15,7 @@
   <properties>
     <github.base>https://github.com/jbosstools/</github.base>
     <git.base>git://github.com/jbosstools/</git.base>
+    <assignedNode>(RHEL5||RHEL6)&amp;&amp;!ia64&amp;&amp;!rhts</assignedNode>
   </properties>
   <build>
     <plugins>
@@ -50,7 +51,26 @@
 		      <type>string</type>
 		      <name>MAVEN_FLAGS</name>
 		      <value>-B -U -fae -e -P hudson,pack200,jbosstools-nightly-staging-composite,unified.target</value>
-		      <description>TBD</description>
+		      <description>Pass in lifecycle phase and extra flags to Maven, such as:
+&lt;pre&gt;
+clean :: clean before building *
+integration-test :: build and test *
+install :: build, test, and install into m2 repo *
+osgi-test:test :: just (re-)run test(s)
+
+-P hudson :: enable hudson build ID in feature/plugin qualifiers
+
+-Dmaven.test.skip :: skip compiling and running tests
+-Dmaven.repo.local=${WORKSPACE}/m2-repository :: path to local m2 repo
+
+-fae :: fail at end
+
+-o :: offline
+-B :: batch (non-interactive) mode
+-U :: check for updates
+-e :: if error occurs, dump stack into console
+
+-q :: quieter output&lt;/pre&gt;D</description>
 		    </parameter>
 		    <parameter>
 		      <type>string</type>
@@ -65,7 +85,9 @@
 		    <parameter>
 		      <type>bool</type>
 		      <name>skipRevisionCheckWhenPublishing</name>
-		      <description>TBD</description>
+		      <description>>Check box to always publish new build to staging / nightly. 
+Unchecked, publish.sh will check previous build's revision to decide if this build needs
+to overwrite the previous one, or if it's in fact the same source therefore same binaries.</description>
 		      <value>4.30.5.Alpha3</value>
 		    </parameter>
 		  </parameters>
@@ -206,7 +228,7 @@
 		  <process>
 		    {{
 		    def assignedNode = node.assignedNode
-		    assignedNode[0].value = "(RHEL5||RHEL6)&amp;&amp;!ia64&amp;&amp;!rhts"
+		    assignedNode[0].value = "${assignedNode}"
 		    }}
 		  </process>
 		</job>

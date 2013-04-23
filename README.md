@@ -20,3 +20,12 @@ Note: syncjobs.sh is currently very crude and just create all jobs and then upda
 It does not check if the job exists first nor does it delete jobs that are not in the list etc.
 Thus be careful :)
 
+Jenkins requirements
+====================
+
+The following plugins need to be installed in your jenkins:
+
+ * xvfb 
+ * BuildTimeout
+ * git
+ * github
