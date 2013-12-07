@@ -1,0 +1,65 @@
+- job-template:
+    name: 'jbosstools-{name}'
+    scm:
+      - git:
+          url: https://github.com/jbosstools/jbosstools-{name}
+          branches: 
+            - master
+    builders:
+      - maven-target:
+          maven-version: mvn30
+          goals: clean verify
+          private-repository: true
+          properties: 
+            - skipTest=true
+
+- project:
+    name: livereload
+    jobs:
+      - 'jbosstools-{name}':
+          
+- project:
+    name: birt
+    jobs:
+      - 'jbosstools-{name}':
+
+- project:
+    name: forge
+    jobs:
+      - 'jbosstools-{name}':
+
+- project:
+    name: openshift
+    jobs:
+      - 'jbosstools-{name}':
+
+- project:
+    name: webservices
+    jobs:
+      - 'jbosstools-{name}':
+
+- project:
+    name: hibernate
+    jobs:
+      - 'jbosstools-{name}':
+
+- project:
+    name: jst
+    jobs:
+      - 'jbosstools-{name}':
+
+- project:
+    name: arquillian
+    jobs:
+      - 'jbosstools-{name}':
+
+- project:
+    name: portlet
+    jobs:
+      - 'jbosstools-{name}':
+
+- project:
+    name: freemarker
+    jobs:
+      - 'jbosstools-{name}':
+
