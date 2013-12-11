@@ -3,6 +3,17 @@
     scm:
       - git:
           url: https://github.com/maxandersen/jenkins-job-builder
+    builders:
+      - shell: |
+               mkdir -p lb
+               export PYTHONPATH=lb
+               pwd
+               python setup.py develop --install-dir=lb
+               rm -rf buildchow
+               git clone https://github.com/maxandersen/buildchow
+               cd buildchow
+               git checkout jenkinsbuilderexp
+               ../lb/jenkins-jobs --conf jenkinsman.ini update jobs.yaml
      
 - job-template:
     name: 'jbosstools-{name}'
