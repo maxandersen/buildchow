@@ -1,3 +1,9 @@
+- job:
+    name: jjb
+    scm:
+      - git:
+          url: https://github.com/maxandersen/jenkins-job-builder
+     
 - job-template:
     name: 'jbosstools-{name}'
 
