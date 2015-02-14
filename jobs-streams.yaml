@@ -1,8 +1,6 @@
 - defaults:
     name: global
-    master-branch: master
-    4.3.mars-branch: jbosstools-4.3.0.Alpha1x
-    components: &components
+    components: &components # an alias for components
       - livereload
       - birt
       - forge
@@ -16,7 +14,7 @@
       - server
     
 - project:
-    name: jbosstools-master
+    name: jbosstools-master  # 'project' for a certain stream
     stream:
       master
     branch:
@@ -27,13 +25,13 @@
       - 'jbosstools-{component}_{stream}'
           
 - project:
-    name: jbosstools-mars
+    name: jbosstools-mars 
     stream:
       4.3.mars
     branch:
       - jbosstools-4.3.0.Alpha1x
     component: 
-      *components
+      *components  # reusing same component list but could use different one per stream if needed
     jobs:
       - 'jbosstools-{component}_{stream}'
 
