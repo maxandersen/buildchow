@@ -19,6 +19,10 @@ The resulting jobs are found inside `jobs`.
 Setup jobs in Docker Jenkins
 =
 
+NOTE: this setup should only be used for testing the jobs setup.
+To do full effective builds should setup jenkins to use mounted
+volumes etc. But its great for prototyping.
+
 First make sure you have docker installed (if on OSX/windows use
 boot2docker):
 
