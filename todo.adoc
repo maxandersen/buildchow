@@ -1,0 +1,32 @@
+= Local Jenkins Configuration
+
+Add label to have it be recognized as a runnable node. (i.e. RHEL7)
+
+Add jdk jdk1.7 and jdk1.6 to have a server to look up.
+
+Add maven installers
+
+= Todos
+
+enable batch mode on unpack tag. just use maven flags ?
+
+buildpublish to jboss.org does not require name but publisher jenkins does.
+
+CRITICAL: missing AbortOperation for timeout
+
+CRITICAL: missing xvnc
+
+= Questions
+
+
+not the same maven version used for steps!? grep mavenName
+
+why using ${WORKSPACE}/ instead of just relative paths ?
+
+
+why is the unpack content put into sources potentially overwriting stuff in there ? 
+Should it not be unpacked separately ?
+
+
+where does BUILD_DESCRIPTION= come from ?
+
