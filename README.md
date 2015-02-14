@@ -6,26 +6,39 @@ Prototype for defining jboss tools builds via a script instead of manually maint
 How to build/use
 ================
 
-First you run the build to generate the jobs.
+First you need to install jenkins-job-builder
 
-   $ mvn verify
+   $ pip install jenkins-job-builder
 
-The resulting jobs are found in side `target/jobs`.
+You should now be able to run this to generate the xml for the jobs:
 
-Now you need your jenkinsurl, username and password and run `syncjobs.sh`
+   $ jenkins-jobs  test jobs-streams.yaml -o jobs
 
-   $ sh syncjobs.sh <jenkinsurl> <username> <password>
+The resulting jobs are found inside `jobs`.
 
-Note: syncjobs.sh is currently very crude and just create all jobs and then update them all.
-It does not check if the job exists first nor does it delete jobs that are not in the list etc.
-Thus be careful :)
+Setup jobs in Docker Jenkins
+=
 
-Jenkins requirements
-====================
+First make sure you have docker installed (if on OSX/windows use
+boot2docker):
 
-The following plugins need to be installed in your jenkins:
+The following assumes you have `dockerhost` in your `/etc/hosts`
+pointing to wherever your docker host is running.
 
- * xvfb 
- * BuildTimeout
- * git
- * github
+Now run this in on terminal:
+
+   $ docker run -p 8080:8080 jenkins
+
+If it is the first time it needs to download an image of jenkins. Next
+startups will be fast.
+
+Once this completes opening http://dockerhost:8080 should show you a
+local running jenkins.
+
+Now you can run this to send the jobs to this docker backed jenkins:
+
+   $ jenkins-jobs --conf dockerjenkins.ini update jobs-streams.yaml
+
+This uses `dockerjenkins.ini` which assumes `dockerhost` resolves to
+your docker run jenkins.
+

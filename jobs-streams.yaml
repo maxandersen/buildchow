@@ -1,17 +1,24 @@
 - defaults:
     name: global
     components: &components # an alias for components
-      - livereload
-      - birt
-      - forge
-      - openshift
-      - webservices
-      - hibernate
-      - jst
+      - aerogear
       - arquillian
-      - portlet
+      - base
+      - birt
+      - browsersim
+      - central
+      - forge
       - freemarker
+      # - gwt
+      - hibernate
+      - javaee
+      - jst
+      - livereload
+      - openshift
+      - portlet
       - server
+      - vpe
+      - webservices
     
 - project:
     name: jbosstools-master  # 'project' for a certain stream
@@ -34,30 +41,10 @@
       *components  # reusing same component list but could use different one per stream if needed
     jobs:
       - 'jbosstools-{component}_{stream}'
+      
 
 - job-template:
     name: 'jbosstools-{component}_{stream}'
-
-    parameters:
-      - string:
-          name: MAVEN_FLAGS
-          default: "-B -U -fae -e"
-          description: "Default flags passed to maven targets"
-      - string:
-          name: TARGET_PLATFORM_VERSION
-          default: 4.31.0.Final
-          description: "Target platform to use for build/compilation"
-      - string:
-          name: TARGET_PLATFORM_VERSION_MAXIMUM
-          default: "4.31.0.Final"
-          description: "Target platform used for testing."
-      - string:  ## TODO: what is this parameter used for ?
-          name: JAVA17
-          default: jdk1.7.0_last
-          description: "Variable used to define which version of JDK 7 to use in /qa/tools/opt/"
-      - bool:
-          name: skipRevisionCheckWhenPublishing
-          default: false
 
     scm:
       - git:
@@ -75,5 +62,8 @@
             - "-Xms512m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=256m"
           properties: 
             - skipTests=true
+
+
+
 
 
