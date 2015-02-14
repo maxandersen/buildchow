@@ -1,0 +1,81 @@
+- defaults:
+    name: global
+    master-branch: master
+    4.3.mars-branch: jbosstools-4.3.0.Alpha1x
+    components: &components
+      - livereload
+      - birt
+      - forge
+      - openshift
+      - webservices
+      - hibernate
+      - jst
+      - arquillian
+      - portlet
+      - freemarker
+      - server
+    
+- project:
+    name: jbosstools-master
+    stream:
+      master
+    branch:
+      - master
+    component: 
+      *components
+    jobs:
+      - 'jbosstools-{component}_{stream}'
+          
+- project:
+    name: jbosstools-mars
+    stream:
+      4.3.mars
+    branch:
+      - jbosstools-4.3.0.Alpha1x
+    component: 
+      *components
+    jobs:
+      - 'jbosstools-{component}_{stream}'
+
+- job-template:
+    name: 'jbosstools-{component}_{stream}'
+
+    parameters:
+      - string:
+          name: MAVEN_FLAGS
+          default: "-B -U -fae -e"
+          description: "Default flags passed to maven targets"
+      - string:
+          name: TARGET_PLATFORM_VERSION
+          default: 4.31.0.Final
+          description: "Target platform to use for build/compilation"
+      - string:
+          name: TARGET_PLATFORM_VERSION_MAXIMUM
+          default: "4.31.0.Final"
+          description: "Target platform used for testing."
+      - string:  ## TODO: what is this parameter used for ?
+          name: JAVA17
+          default: jdk1.7.0_last
+          description: "Variable used to define which version of JDK 7 to use in /qa/tools/opt/"
+      - bool:
+          name: skipRevisionCheckWhenPublishing
+          default: false
+
+    scm:
+      - git:
+          url: https://github.com/jbosstools/jbosstools-{name}
+          wipe-workspace: false
+          branches: 
+            - '{branch}'
+    builders:
+      - maven-target:
+          maven-version: mvn30
+          goals: clean verify -B -U -fae -e
+          settings: /Users/cijoe/.m2/local-settings.xml
+          private-repository: true
+          java-opts: 
+            - "-Xms512m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=256m"
+          properties: 
+            - skipTests=true
+
+
