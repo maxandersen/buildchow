@@ -6,17 +6,30 @@ Add jdk jdk1.7 and jdk1.6 to have a server to look up.
 
 Add maven installers
 
+enable safe html under security
+
 = Todos
 
 enable batch mode on unpack tag. just use maven flags ?
 
 buildpublish to jboss.org does not require name but publisher jenkins does.
 
-CRITICAL: missing AbortOperation for timeout
+CRITICAL: missing AbortOperation for timeout (Seems abort is the default so not needed ?)
 
 CRITICAL: missing xvnc
 
 = Questions
+
+why are artifacts pattern different between normal and nested ?
+"results/*/all/*Update*.zip,sources/*/target/jacoco.exec,sources/*/*tests/*/target/work/configuration/*.log,sources/*/*tests/*/target/work/data/.metadata/*.log, sources/target/coverage-report/**"
+
+why did we choose all-tests and not justs tests for the root test folder so the jobs would be the same ? 
+
+MAVEN_FLAGS talks about passing in install and other goals..that would mess up the task.
+should it not *only* be flags, not goals ? What does the '*' mean for the flags ?
+
+
+what happend to sidebar?
 
 
 not the same maven version used for steps!? grep mavenName
@@ -30,3 +43,5 @@ Should it not be unpacked separately ?
 
 where does BUILD_DESCRIPTION= come from ?
 
+
+Could we just use H H/8 * * * to get random hash ? http://htmlpreview.github.io/?https://github.com/jenkinsci/jenkins/blob/master/core/src/main/resources/hudson/triggers/TimerTrigger/help-spec.html 
