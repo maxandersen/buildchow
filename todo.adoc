@@ -10,6 +10,10 @@ enable safe html under security
 
 = Todos
 
+do tests timeout
+
+check if pattern are correct.
+
 enable batch mode on unpack tag. just use maven flags ?
 
 buildpublish to jboss.org does not require name but publisher jenkins does.

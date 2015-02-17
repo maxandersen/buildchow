@@ -1,7 +1,6 @@
 - defaults:
     name: global
     jvm-memory: "-Xms512m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=256m"
-    test-jre-properties: '-Djbosstools.test.jre.5="${{NATIVE_TOOLS}}${{SEP}}${{JAVA15}}" -Djbosstools.test.jre.6="${{NATIVE_TOOLS}}${{SEP}}${{JAVA16}}"'
     tests-folder: tests # for some it is all-tests
     component-responsible: ""
     scm-schedule: H H/8 * * * # every 8 hours starting a random hour. Removes need for each job to configure it (http://htmlpreview.github.io/?https://github.com/jenkinsci/jenkins/blob/master/core/src/main/resources/hudson/triggers/TimerTrigger/help-spec.html)
@@ -32,7 +31,8 @@
       - javaee:
           tests-folder: all-tests
       - jst
-      - livereload
+      - livereload:
+          component-responsible: "xcoulon@redhat.com"
       - openshift
       - portlet
       - server:
@@ -183,6 +183,16 @@
             Check box to always publish new build to staging / nightly. <br/>
             Unchecked, publish.sh will check previous build's revision to decide if this build needs <br/>
             to overwrite the previous one, or if it's in fact the same source &amp; therefore same binaries.<br/>
+      - string:
+          name: JAVA17
+          default: jdk1.7.0_last
+          description: |
+              Variable used to define which version of JDK 7 to use in ${{NATIVE_TOOLS}}
+      - string:
+          name: JAVA18
+          default: jdk1.8.0_last
+          description: |
+              Variable used to define which version of JDK 8 to use in ${{NATIVE_TOOLS}}
 
     properties:          
       - github:
@@ -203,13 +213,16 @@
       - pollscm: "{scm-schedule}"
 
     builders:
+      - shell: |
+               echo Rob is awesome
+               ls -l ${{NATIVE_TOOLS}}
       - maven-target:
           goals: "clean install ${{MAVEN_FLAGS}} -DTARGET_PLATFORM_VERSION=${{TARGET_PLATFORM_VERSION}}"
           maven-version: maven-3.2.5
           settings: "{maven-settings}"
           private-repository: true
           java-opts: 
-            - "{jvm-memory} {test-jre-properties}"
+            - "{jvm-memory}"
           properties: 
             - maven.test.skip=true
             - skipITests=true
@@ -218,6 +231,10 @@
             - BUILD_ID=${{BUILD_ID}}
             - BUILD_NUMBER=${{BUILD_NUMBER}}
             - skipPrivateRequirements=false
+            - jbosstools.test.jre.5="${{NATIVE_TOOLS}}${{SEP}}${{JAVA15}}" 
+            - jbosstools.test.jre.6="${{NATIVE_TOOLS}}${{SEP}}${{JAVA16}}"
+            - jbosstools.test.jre.7="${{NATIVE_TOOLS}}${{SEP}}${{JAVA17}}"
+            - jbosstools.test.jre.8="${{NATIVE_TOOLS}}${{SEP}}${{JAVA18}}"
           pom: ${{WORKSPACE}}/sources/pom.xml
       - maven-target:
           goals: "{ci-maven-flags} org.apache.maven.plugins:maven-dependency-plugin:2.9:unpack" #TODO: should it have all MAVEN_FLAGS ?
@@ -245,11 +262,15 @@
       #      - BUILD_ID=${{BUILD_ID}}
       #      - BUILD_NUMBER=${{BUILD_NUMBER}}
       #      - skipPrivateRequirements=false
+      #      - jbosstools.test.jre.5="${{NATIVE_TOOLS}}${{SEP}}${{JAVA15}}" 
+      #      - jbosstools.test.jre.6="${{NATIVE_TOOLS}}${{SEP}}${{JAVA16}}"
+      #     - jbosstools.test.jre.7="${{NATIVE_TOOLS}}${{SEP}}${{JAVA17}}"
+      #      - jbosstools.test.jre.8="${{NATIVE_TOOLS}}${{SEP}}${{JAVA18}}"
       - maven-target:
           goals: verify ${{MAVEN_FLAGS}} -DTARGET_PLATFORM_VERSION=${{TARGET_PLATFORM_VERSION_MAXIMUM}}
           maven-version: maven-3.2.5
           java-opts: 
-            - "{jvm-memory} {test-jre-properties}"
+            - "{jvm-memory}"
           pom: ${{WORKSPACE}}/sources/{tests-folder}/pom.xml
           private-repository: true
           properties:
@@ -259,7 +280,10 @@
             - BUILD_ID=${{BUILD_ID}}
             - BUILD_NUMBER=${{BUILD_NUMBER}}
             - skipPrivateRequirements=false
-
+            - jbosstools.test.jre.5="${{NATIVE_TOOLS}}${{SEP}}${{JAVA15}}" 
+            - jbosstools.test.jre.6="${{NATIVE_TOOLS}}${{SEP}}${{JAVA16}}"
+            - jbosstools.test.jre.7="${{NATIVE_TOOLS}}${{SEP}}${{JAVA17}}"
+            - jbosstools.test.jre.8="${{NATIVE_TOOLS}}${{SEP}}${{JAVA18}}"
     publishers:
       - archive:
           artifacts: >
